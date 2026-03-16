@@ -1,0 +1,24 @@
+# Python virtual environment - NEVER commit this (it's huge!)
+venv/
+env/
+.env
+
+# Python cache files - auto-generated, not needed
+__pycache__/
+*.pyc
+*.pyo
+
+# Database file - contains real shop data, don't commit
+*.db
+*.sqlite
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+
+# Logs
+*.log
