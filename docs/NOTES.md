@@ -35,3 +35,5 @@ I built ShopTracker to solve this.
 - frontend/index.html = The app's main HTML page
 - frontend/style.css = All styling
 - frontend/app.js = All JavaScript logic
+
+
