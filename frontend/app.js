@@ -1512,15 +1512,13 @@ async function loadBuyEditList() {
             </div>
             <div style="background:var(--surface2);border-radius:8px;padding:10px;border:1px solid var(--border)">
               <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;margin-bottom:8px">📦 Add More Stock (optional)</div>
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-                <div>
-                  <div class="form-label">Add Qty</div>
-                  <input type="number" class="form-input" id="bedit-qty-${cat.id}" placeholder="e.g. 20" inputmode="numeric">
-                </div>
-                <div>
-                  <div class="form-label">Wholesale ₹</div>
-                  <input type="number" class="form-input" id="bedit-ws-${cat.id}" placeholder="Total paid" inputmode="numeric">
-                </div>
+              <div style="margin-bottom:8px">
+                <div class="form-label">Add Qty</div>
+                <input type="number" class="form-input" id="bedit-qty-${cat.id}" placeholder="e.g. 20" inputmode="numeric">
+              </div>
+              <div>
+                <div class="form-label">Wholesale ₹ (total paid)</div>
+                <input type="number" class="form-input" id="bedit-ws-${cat.id}" placeholder="e.g. 400" inputmode="numeric">
               </div>
             </div>
             <div style="display:flex;gap:8px">
@@ -1540,8 +1538,12 @@ async function loadBuyEditList() {
 function toggleBuyEditRow(id) {
   const row = get(`bedit-row-${id}`);
   if (!row) return;
-  row.classList.toggle('show');
-  if (row.classList.contains('show')) {
+  const isOpen = row.classList.contains('show');
+  // Close ALL open rows first
+  document.querySelectorAll('.eci-edit-row').forEach(r => r.classList.remove('show'));
+  // If it was closed, open it. If it was open, leave it closed.
+  if (!isOpen) {
+    row.classList.add('show');
     setTimeout(() => { const inp = get(`bedit-name-${id}`); if (inp) inp.focus(); }, 100);
   }
 }
