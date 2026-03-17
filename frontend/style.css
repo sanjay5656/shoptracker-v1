@@ -436,16 +436,12 @@ select.form-input { cursor:pointer; }
   display:none; flex-direction:column; gap:10px;
   padding:14px; background:var(--surface3);
   border-top:1px solid var(--border);
-  box-sizing:border-box;
-  width:100%;
-  overflow:hidden;
 }
 .eci-edit-row.show { display:flex; }
 .eci-edit-input {
-  width:100%; padding:8px 12px; border:1.5px solid rgba(217,119,6,0.3);
+  flex:1; padding:8px 12px; border:1.5px solid rgba(217,119,6,0.3);
   border-radius:8px; font-size:14px; font-weight:700; color:var(--gold);
   background:#fff; outline:none; font-family:'Poppins',sans-serif;
-  box-sizing:border-box;
 }
 .eci-name-input {
   flex:1; padding:8px 12px; border:1.5px solid rgba(26,107,60,0.25);
@@ -615,3 +611,44 @@ select.form-input { cursor:pointer; }
   padding:20px; width:100%; max-width:480px; box-shadow:var(--shadow-lg);
 }
 .edit-cart-title { font-size:15px; font-weight:800; margin-bottom:14px; color:var(--text); }
+/* ── BUY SCREEN TAB BAR ── */
+.buy-tab-bar {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  background: var(--surface);
+  border-radius: var(--r-sm);
+  border: 1px solid var(--border);
+  overflow: hidden;
+  margin-bottom: 10px;
+  box-shadow: var(--shadow-sm);
+}
+.buy-tab-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  padding: 14px 4px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-family: 'Poppins', sans-serif;
+  border-right: 1px solid var(--border);
+  transition: background 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.buy-tab-btn:last-child { border-right: none; }
+.buy-tab-btn:active     { opacity: 0.7; }
+.btab-icon  { font-size: 22px; line-height: 1; }
+.btab-label { font-size: 12px; font-weight: 700; color: var(--text3); }
+.buy-tab-btn.active { background: var(--green-lite); }
+.buy-tab-btn.active .btab-label { color: var(--green); }
+.buy-tab-panel {
+  background: var(--surface);
+  border-radius: var(--r-sm);
+  border: 1px solid var(--border);
+  padding: 14px;
+  box-sizing: border-box;
+  width: 100%;
+  box-shadow: var(--shadow-sm);
+}
