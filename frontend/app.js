@@ -97,7 +97,10 @@ document.addEventListener('DOMContentLoaded', () => {
   get('heroMon').textContent   = now.toLocaleDateString('en-IN',{month:'short'}).toUpperCase() + ' ' + now.getFullYear();
 
   // FIX #1: restore tab from hash
-  switchTabInternal('home');
+  // Restore tab from URL hash on refresh
+  const _hash = window.location.hash.replace('#','');
+  const _valid = ['home','buy','sell','see','history'];
+  switchTabInternal(_valid.includes(_hash) ? _hash : 'home');
 
   checkOnline();
   loadHomeData();
@@ -109,7 +112,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // ─────────────────────────────────────────
 function switchTab(tab) {
   // Update URL hash (triggers popstate for back button)
-  history.pushState(null, '', TAB_HASH[tab] || '#home');
+  history.replaceState(null, '', '#' + tab);
   switchTabInternal(tab);
 }
 
