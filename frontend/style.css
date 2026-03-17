@@ -436,12 +436,16 @@ select.form-input { cursor:pointer; }
   display:none; flex-direction:column; gap:10px;
   padding:14px; background:var(--surface3);
   border-top:1px solid var(--border);
+  box-sizing:border-box;
+  width:100%;
+  overflow:hidden;
 }
 .eci-edit-row.show { display:flex; }
 .eci-edit-input {
-  flex:1; padding:8px 12px; border:1.5px solid rgba(217,119,6,0.3);
+  width:100%; padding:8px 12px; border:1.5px solid rgba(217,119,6,0.3);
   border-radius:8px; font-size:14px; font-weight:700; color:var(--gold);
   background:#fff; outline:none; font-family:'Poppins',sans-serif;
+  box-sizing:border-box;
 }
 .eci-name-input {
   flex:1; padding:8px 12px; border:1.5px solid rgba(26,107,60,0.25);

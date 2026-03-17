@@ -119,44 +119,31 @@
     </div>
   </div>
   <div class="pad">
-
     <div class="buy-step-card">
+
       <div class="buy-step-label">📂 Step 1 — Category</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">
-        <button class="buy-mode-btn active" id="buyModeExisting" onclick="setBuyMode('existing')">Select Existing</button>
-        <button class="buy-mode-btn" id="buyModeNew" onclick="setBuyMode('new')">+ New Category</button>
-      </div>
-      <div id="buyExistingPanel">
-        <select class="form-input" id="buyCategory" onchange="onBuyCategorySelect()">
-          <option value="">— Select Category —</option>
-        </select>
-        <div id="buyCatInfoStrip" style="display:none;margin-top:10px;background:var(--green-lite);border-radius:var(--r-sm);padding:10px 14px;border:1px solid rgba(26,107,60,0.15)">
-          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
-            <div>
-              <div style="font-size:11px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:0.5px">Current Stock</div>
-              <div style="font-size:18px;font-weight:800;color:var(--text)" id="buyCatStockVal">0</div>
-            </div>
-            <div>
-              <div style="font-size:11px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:0.5px">Selling Price</div>
-              <div style="font-size:18px;font-weight:800;color:var(--green)" id="buyCatSellVal">₹0</div>
-            </div>
-            <div>
-              <div style="font-size:11px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:0.5px">Avg Cost</div>
-              <div style="font-size:18px;font-weight:800;color:var(--text2)" id="buyCatCostVal">₹0</div>
-            </div>
+      <select class="form-input" id="buyCategory" onchange="onBuyCategorySelect()" style="margin-bottom:10px">
+        <option value="">— Select Category —</option>
+      </select>
+
+      <div id="buyCatInfoStrip" style="display:none;background:var(--surface3);border-radius:var(--r-sm);padding:10px 14px;margin-bottom:10px;border:1px solid var(--border)">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+          <div style="text-align:center">
+            <div style="font-size:10px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:0.5px">Stock</div>
+            <div style="font-size:20px;font-weight:800;color:var(--text)" id="buyCatStockVal">0</div>
+          </div>
+          <div style="text-align:center">
+            <div style="font-size:10px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:0.5px">Sell Price</div>
+            <div style="font-size:20px;font-weight:800;color:var(--green)" id="buyCatSellVal">₹0</div>
+          </div>
+          <div style="text-align:center">
+            <div style="font-size:10px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:0.5px">Avg Cost</div>
+            <div style="font-size:20px;font-weight:800;color:var(--text2)" id="buyCatCostVal">—</div>
           </div>
         </div>
       </div>
-      <div id="buyNewPanel" style="display:none">
-        <div class="form-group" style="margin-bottom:10px">
-          <div class="form-label">Category Name</div>
-          <input type="text" class="form-input" id="newCatName" placeholder="e.g. Earrings">
-        </div>
-      </div>
-    </div>
 
-    <div class="buy-step-card" style="margin-top:10px">
-      <div class="buy-step-label">📦 Step 2 — Purchase Details</div>
+      <div class="buy-step-label">💰 Step 2 — Purchase Details</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
         <div class="form-group" style="margin-bottom:0">
           <div class="form-label">Qty Bought</div>
@@ -164,12 +151,12 @@
         </div>
         <div class="form-group" style="margin-bottom:0">
           <div class="form-label">Wholesale ₹</div>
-          <input type="number" class="form-input" id="buyTotal" placeholder="e.g. 500" inputmode="numeric" min="0" oninput="calcBuy()">
+          <input type="number" class="form-input" id="buyTotal" placeholder="e.g. 800" inputmode="numeric" min="0" oninput="calcBuy()">
         </div>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
         <div class="form-group" style="margin-bottom:0">
-          <div class="form-label">Selling Price ₹ <span class="opt">(opt)</span></div>
+          <div class="form-label">Sell Price ₹ <span class="opt">(opt)</span></div>
           <input type="number" class="form-input" id="buySellingPrice" placeholder="e.g. 60" inputmode="numeric" min="0" oninput="calcBuy()">
         </div>
         <div class="form-group" style="margin-bottom:0">
@@ -190,10 +177,9 @@
     </div>
 
     <button class="btn btn-green" style="margin-top:12px" onclick="recordPurchase()">✅ Save Purchase</button>
-    <div class="info-box green" id="buySuccessBox" style="display:none; margin-top:12px"></div>
+    <div class="info-box green" id="buySuccessBox" style="display:none;margin-top:12px"></div>
   </div>
 </div>
-
 <!-- ═══ SELL SCREEN ═══ -->
 <div class="screen" id="sellScreen">
   <div class="screen-header">
