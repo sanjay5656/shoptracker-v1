@@ -14,7 +14,6 @@ let API_URL = safeGetStorage('api_url') || (window.location.port === '8000' ? wi
 let cart = [], cartTotal = 0;
 let histData = { sales: [], purchases: [] };
 let histMode = 'all';
-let _buyMode = 'existing';
 let _confirmCallback = null;
 let _editCartIndex = -1;
 let _categoryCache = []; // FIX #3: cache categories for name lookup
@@ -69,7 +68,7 @@ function saveSettings() {
   const shop  = get('settingShopName').value.trim()  || 'My Shop';
   const owner = get('settingOwnerName').value.trim() || 'Owner';
   const newUrl = get('settingApiUrl').value.trim();
-  localStorage.setItem('shop_name', shop);
+  safeSetStorage('shop_name', shop);
   safeSetStorage('owner_name', owner);
   if (newUrl && newUrl !== API_URL) {
     safeSetStorage('api_url', newUrl);
@@ -242,60 +241,9 @@ async function loadCategoriesForSell() {
   } catch(e){}
 }
 
-// ─────────────────────────────────────────
-//  BUY MODE TOGGLE
-// ─────────────────────────────────────────
-function setBuyMode(mode) {
-  _buyMode = mode;
-  get('buyModeExisting').classList.toggle('active', mode==='existing');
-  get('buyModeNew').classList.toggle('active', mode==='new');
-  get('buyExistingPanel').style.display = mode==='existing' ? 'block' : 'none';
-  get('buyNewPanel').style.display      = mode==='new'      ? 'block' : 'none';
-  get('buyQty').value=''; get('buyTotal').value='';
-  get('buySellingPrice').value=''; get('buySupplier').value='';
-  get('costPerPieceDisplay').textContent='—';
-  removeClass('calcBox','show');
-  get('marginRow').style.display='none';
-}
 
-// ─────────────────────────────────────────
-//  ADD NEW CATEGORY
-// ─────────────────────────────────────────
-async function addNewCategory() {
-  const name = get('newCatName').value.trim();
-  if (!name) { alert('Enter a category name'); return; }
-  const qty       = parseInt(get('buyQty').value)||0;
-  const wholesale = parseFloat(get('buyTotal').value)||0;
-  const sellPrice = parseFloat(get('buySellingPrice').value)||0;
-  try {
-    const res = await fetch(`${API_URL}/categories/`, {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({name, selling_price: sellPrice})
-    });
-    const data = await res.json();
-    if (!res.ok) { alert('Error: '+data.detail); return; }
-    const newCatId = data.category?.id || data.id;
-    if (qty > 0 && wholesale > 0 && newCatId) {
-      await fetch(`${API_URL}/purchases/`, {
-        method:'POST', headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({category_id:newCatId, quantity_bought:qty, total_paid:wholesale})
-      });
-    }
-    await loadCategories();
-    setBuyMode('existing');
-    const sel = get('buyCategory');
-    for (let i=0; i<sel.options.length; i++) {
-      if (parseInt(sel.options[i].value) === newCatId) { sel.selectedIndex=i; break; }
-    }
-    onBuyCategorySelect();
-    if (qty > 0)       get('buyQty').value = qty;
-    if (wholesale > 0) get('buyTotal').value = wholesale;
-    if (sellPrice > 0) get('buySellingPrice').value = sellPrice;
-    calcBuy();
-    get('newCatName').value = '';
-    showToast(`✅ "${name}" created & selected!`);
-  } catch(e){ alert('Cannot connect'); }
-}
+
+
 
 // ─────────────────────────────────────────
 //  BUY SCREEN
@@ -346,7 +294,6 @@ async function recordPurchase() {
     await createNewCategory();
     return;
   }
-  if (_buyMode === 'new') { await addNewCategory(); return; }
   const catId = get('buyCategory').value;
   const qty   = get('buyQty').value;
   const total = get('buyTotal').value;
@@ -360,7 +307,7 @@ async function recordPurchase() {
       body:JSON.stringify({category_id:parseInt(catId),quantity_bought:parseInt(qty),total_paid:parseFloat(total),supplier_name:supp||null})});
     const data=await res.json();
     if (res.ok) {
-      if (sp>0) await fetch(`${API_URL}/categories/${catId}/price`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({selling_price:sp})});
+      if (sp>0) await fetch(`${API_URL}/categories/${catId}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({selling_price:sp})});
       const box=get('buySuccessBox');
       box.innerHTML=`✅ ${qty} pcs added! Cost/pc: ${fmt(data.purchase.cost_per_piece)} · New stock: ${data.stock_update.new_quantity}`;
       box.style.display='block';
@@ -1048,126 +995,11 @@ function toggleDayDetail(id) {
   el.classList.toggle('show'); chev.classList.toggle('open');
 }
 
-// ─────────────────────────────────────────
-//  EDIT PRICES — FIX #2: also edit category name
-// ─────────────────────────────────────────
-async function loadPricesTab() {
-  try {
-    const res=await fetch(`${API_URL}/categories/`);
-    const data=await res.json(); const c=get('pricesList'); c.innerHTML='';
-    const cats=data.categories||[];
-    if (!cats.length){
-      c.innerHTML='<div class="empty-state"><div class="es-icon">🏷️</div><div class="es-title">No categories yet</div><div class="es-sub">Add categories from Buy screen</div></div>';
-      return;
-    }
-    const card=document.createElement('div');
-    card.className='card'; card.style.overflow='hidden';
-    cats.forEach(cat=>{
-      const div=document.createElement('div');
-      div.innerHTML=`
-        <div class="price-row" style="cursor:pointer" onclick="toggleEciEdit(${cat.id})">
-          <div style="flex:1">
-            <div class="eci-name">${cat.name}</div>
-            <div style="display:flex;gap:8px;margin-top:3px;flex-wrap:wrap">
-              <span style="font-size:11px;color:var(--text3)">Stock: <strong style="color:var(--text2)" id="eci-stock-${cat.id}">${cat.current_stock||0}</strong></span>
-              <span style="font-size:11px;color:var(--text3)">Sell: <strong style="color:var(--green)" id="ecp-${cat.id}">${fmt(cat.selling_price||0)}</strong></span>
-              <span style="font-size:11px;color:var(--text3)">Avg cost: <strong style="color:var(--text2)">${fmt(cat.avg_cost||0)}</strong></span>
-            </div>
-          </div>
-          <button class="eci-edit-btn">✏️ Edit</button>
-        </div>
-        <div class="eci-edit-row" id="eci-row-${cat.id}" style="flex-direction:column;gap:10px;padding:14px">
-          <div>
-            <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:5px">📝 Category Name</div>
-            <input type="text" class="eci-name-input" id="eci-name-${cat.id}" value="${cat.name}" placeholder="Category name">
-          </div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-            <div>
-              <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:5px">Selling Price ₹</div>
-              <input type="number" class="eci-edit-input" id="eci-sell-${cat.id}" value="${cat.selling_price||0}" inputmode="numeric" placeholder="0">
-            </div>
-            <div>
-              <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:5px">Add Stock Qty</div>
-              <input type="number" class="eci-edit-input" id="eci-qty-${cat.id}" placeholder="0" inputmode="numeric">
-            </div>
-          </div>
-          <div>
-            <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:5px">Wholesale Amount ₹ <span style="font-weight:400;text-transform:none">(for added qty)</span></div>
-            <input type="number" class="eci-edit-input" id="eci-ws-${cat.id}" placeholder="Total paid for the qty above" inputmode="numeric">
-          </div>
-          <div style="display:flex;gap:8px">
-            <button class="btn btn-green btn-sm" style="flex:1" onclick="saveEciAll(${cat.id})">✅ Save</button>
-            <button class="btn btn-outline btn-sm" onclick="toggleEciEdit(${cat.id})">Cancel</button>
-          </div>
-        </div>`;
-      card.appendChild(div);
-    });
-    c.appendChild(card);
-  } catch(e){}
-}
-function toggleEciEdit(id) {
-  const row=get(`eci-row-${id}`); row.classList.toggle('show');
-  if (row.classList.contains('show')) get(`eci-name-${id}`).focus();
-}
+
+
 
 // FIX #2: save name + price + stock
-async function saveEciAll(id) {
-  const newName   = get(`eci-name-${id}`).value.trim();
-  const sellPrice = parseFloat(get(`eci-sell-${id}`).value);
-  const addQty    = parseInt(get(`eci-qty-${id}`).value)||0;
-  const wholesale = parseFloat(get(`eci-ws-${id}`).value)||0;
 
-  if (!newName)                    { alert('Category name cannot be empty'); return; }
-  if (isNaN(sellPrice)||sellPrice<0){ alert('Enter valid selling price'); return; }
-
-  try {
-    // Update category name + price in one call (or two if API is separate)
-    // Try PATCH/PUT for name first
-    let nameUpdated = false;
-    try {
-      const rName = await fetch(`${API_URL}/categories/${id}`, {
-        method:'PUT', headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({ name: newName, selling_price: sellPrice })
-      });
-      if (rName.ok) nameUpdated = true;
-    } catch(e2) {}
-
-    // Fallback: update price separately if combined failed
-    if (!nameUpdated) {
-      await fetch(`${API_URL}/categories/${id}/price`,{
-        method:'PUT', headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({selling_price:sellPrice})
-      });
-    }
-
-    // Update display
-    const nameEl = get(`eci-row-${id}`)?.parentElement?.querySelector('.eci-name');
-    if (nameEl) nameEl.textContent = newName;
-    const priceEl = get(`ecp-${id}`);
-    if (priceEl) priceEl.textContent = fmt(sellPrice);
-
-    // Record purchase if qty given
-    if (addQty>0 && wholesale>0) {
-      const r2=await fetch(`${API_URL}/purchases/`,{method:'POST',headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({category_id:id,quantity_bought:addQty,total_paid:wholesale})});
-      if (r2.ok) {
-        const d2=await r2.json();
-        const stockEl = get(`eci-stock-${id}`);
-        if (stockEl) stockEl.textContent=d2.stock_update?.new_quantity||'—';
-      }
-    } else if (addQty>0 && wholesale<=0) {
-      alert('Enter wholesale amount for the added quantity'); return;
-    }
-
-    get(`eci-row-${id}`).classList.remove('show');
-    get(`eci-qty-${id}`).value='';
-    get(`eci-ws-${id}`).value='';
-
-    // Refresh category cache
-    loadCategories();
-    showToast('✅ Updated!');
-  } catch(e){ alert('Cannot connect'); }
-}
 
 // ─────────────────────────────────────────
 //  HISTORY NAV SHORTCUT
@@ -1176,69 +1008,7 @@ function goToHistory() {
   switchTab('history');
 }
 
-// ─────────────────────────────────────────
-//  CATEGORY MANAGEMENT (on Buy page)
-// ─────────────────────────────────────────
-async function loadCatMgmt() {
-  const c = get('catMgmtList');
-  if (!c) return;
-  c.innerHTML = '<div style="text-align:center;padding:16px;color:var(--text3);font-size:13px">Loading...</div>';
-  try {
-    const res  = await fetch(`${API_URL}/categories/`);
-    const data = await res.json();
-    const cats = data.categories || [];
-    if (!cats.length) {
-      c.innerHTML = '<div class="empty-state"><div class="es-icon">🏷️</div><div class="es-title">No categories yet</div><div class="es-sub">Add your first category above</div></div>';
-      return;
-    }
-    const card = document.createElement('div');
-    card.className = 'card'; card.style.overflow = 'hidden';
-    cats.forEach(cat => {
-      const div = document.createElement('div');
-      div.innerHTML = `
-        <div class="price-row" style="cursor:pointer" onclick="toggleCatEdit(${cat.id})">
-          <div style="flex:1">
-            <div class="eci-name">${cat.name}</div>
-            <div style="display:flex;gap:8px;margin-top:3px;flex-wrap:wrap">
-              <span style="font-size:11px;color:var(--text3)">Stock: <strong style="color:var(--text2)" id="cmgmt-stock-${cat.id}">${cat.current_stock||0}</strong></span>
-              <span style="font-size:11px;color:var(--text3)">Sell: <strong style="color:var(--green)" id="cmgmt-price-${cat.id}">${fmt(cat.selling_price||0)}</strong></span>
-              <span style="font-size:11px;color:var(--text3)">Avg cost: <strong style="color:var(--text2)">${fmt(cat.avg_cost||0)}</strong></span>
-            </div>
-          </div>
-          <button class="eci-edit-btn">✏️ Edit</button>
-        </div>
-        <div class="eci-edit-row" id="cmgmt-row-${cat.id}" style="flex-direction:column;gap:10px;padding:14px">
-          <div>
-            <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:5px">📝 Category Name</div>
-            <input type="text" class="eci-name-input" id="cmgmt-name-${cat.id}" value="${cat.name}" placeholder="Category name">
-          </div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-            <div>
-              <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:5px">Selling Price ₹</div>
-              <input type="number" class="eci-edit-input" id="cmgmt-sell-${cat.id}" value="${cat.selling_price||0}" inputmode="numeric" placeholder="0">
-            </div>
-            <div>
-              <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:5px">Add Stock Qty</div>
-              <input type="number" class="eci-edit-input" id="cmgmt-qty-${cat.id}" placeholder="0" inputmode="numeric">
-            </div>
-          </div>
-          <div>
-            <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:5px">Wholesale Amount ₹ <span style="font-weight:400;text-transform:none">(for added qty)</span></div>
-            <input type="number" class="eci-edit-input" id="cmgmt-ws-${cat.id}" placeholder="Total paid for the qty above" inputmode="numeric">
-          </div>
-          <div style="display:flex;gap:8px">
-            <button class="btn btn-green btn-sm" style="flex:1" onclick="saveCatMgmt(${cat.id})">✅ Save</button>
-            <button class="btn btn-outline btn-sm" onclick="toggleCatEdit(${cat.id})">Cancel</button>
-          </div>
-        </div>`;
-      card.appendChild(div);
-    });
-    c.innerHTML = '';
-    c.appendChild(card);
-  } catch(e) {
-    c.innerHTML = '<div class="empty-state"><div class="es-icon">⚠️</div><div class="es-title">Could not load categories</div></div>';
-  }
-}
+
 
 function toggleCatEdit(id) {
   const row = get(`cmgmt-row-${id}`);
@@ -1341,7 +1111,11 @@ async function showTodaySoldItems(dateStr) {
       .filter(s => !seenIds.has(s.id))
       .map(s => ({ ...s, category_name: resolveCatName(s, catNameMap) }));
 
-    const sales = [...primarySales, ...extra];
+    const sales = [...primarySales, ...extra].sort((a, b) => {
+      const dA = new Date((getSaleDate(a)||'').replace(' ','T'));
+      const dB = new Date((getSaleDate(b)||'').replace(' ','T'));
+      return dB - dA;
+    });
 
     if (!sales.length) {
       body.innerHTML = `<div style="text-align:center;padding:40px;color:var(--text3)"><div style="font-size:40px;margin-bottom:10px">📦</div><div style="font-size:14px;font-weight:600;color:var(--text2)">${isToday ? 'No sales yet today' : 'No sales on this day'}</div></div>`;
@@ -1592,4 +1366,93 @@ function showToast(message) {
   toast.textContent = message;
   toast.classList.add('show');
   setTimeout(() => { toast.classList.remove('show'); }, 3000);
+}
+// ─────────────────────────────────────────
+// SELL CATEGORY SEARCH
+// ─────────────────────────────────────────
+function filterSellCategories() {
+  const search = get('sellCategorySearch').value.toLowerCase().trim();
+  const sel    = get('sellCategory');
+  sel.value = '';
+  onSellCategorySelect();
+  sel.innerHTML = '<option value="">— Select Category —</option>';
+  const qmap = {};
+  cart.forEach(i => {
+    qmap[String(i.category_id)] = (qmap[String(i.category_id)] || 0) + i.quantity;
+  });
+  const filtered = search
+    ? _categoryCache.filter(cat => cat.name.toLowerCase().includes(search))
+    : _categoryCache;
+  filtered.forEach(cat => {
+    const avail = (cat.current_stock || 0) - (qmap[String(cat.id)] || 0);
+    const o = document.createElement('option');
+    o.value                = cat.id;
+    o.dataset.stock        = avail;
+    o.dataset.avgCost      = cat.avg_cost || 0;
+    o.dataset.sellingPrice = cat.selling_price || 0;
+    o.dataset.name         = cat.name;
+    o.textContent = avail <= 0
+      ? `${cat.name} — OUT OF STOCK`
+      : `${cat.name} (${avail} left)`;
+    if (avail <= 0) o.disabled = true;
+    sel.appendChild(o);
+  });
+  if (filtered.length === 1) {
+    sel.value = String(filtered[0].id);
+    onSellCategorySelect();
+  }
+}
+
+function handleSellSearchEnter(e) {
+  if (e.key !== 'Enter') return;
+  const sel = get('sellCategory');
+  for (let i = 1; i < sel.options.length; i++) {
+    if (!sel.options[i].disabled) {
+      sel.selectedIndex = i;
+      onSellCategorySelect();
+      get('sellCategorySearch').blur();
+      break;
+    }
+  }
+}
+
+// ─────────────────────────────────────────
+// BUY CATEGORY SEARCH
+// ─────────────────────────────────────────
+function filterBuyCategories() {
+  const search = get('buyCategorySearch').value.toLowerCase().trim();
+  const sel    = get('buyCategory');
+  sel.value = '';
+  get('buyCatInfoStrip').style.display = 'none';
+  sel.innerHTML = '<option value="">— Select Category —</option>';
+  const filtered = search
+    ? _categoryCache.filter(cat => cat.name.toLowerCase().includes(search))
+    : _categoryCache;
+  filtered.forEach(cat => {
+    const o = document.createElement('option');
+    o.value                = cat.id;
+    o.dataset.sellingPrice = cat.selling_price || 0;
+    o.dataset.stock        = cat.current_stock || 0;
+    o.dataset.avgCost      = cat.avg_cost || 0;
+    o.dataset.name         = cat.name;
+    o.textContent = `${cat.name} (Stock: ${cat.current_stock||0})`;
+    sel.appendChild(o);
+  });
+  if (filtered.length === 1) {
+    sel.value = String(filtered[0].id);
+    onBuyCategorySelect();
+  }
+}
+
+function handleBuySearchEnter(e) {
+  if (e.key !== 'Enter') return;
+  const sel = get('buyCategory');
+  for (let i = 1; i < sel.options.length; i++) {
+    if (!sel.options[i].disabled) {
+      sel.selectedIndex = i;
+      onBuyCategorySelect();
+      get('buyCategorySearch').blur();
+      break;
+    }
+  }
 }

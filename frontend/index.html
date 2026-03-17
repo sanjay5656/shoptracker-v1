@@ -141,6 +141,11 @@
 
       <!-- SELECT TAB -->
       <div id="buyTabSelect" style="display:block">
+        <input type="text" class="form-input" id="buyCategorySearch"
+          placeholder="🔍 Search category..."
+          oninput="filterBuyCategories()"
+          onkeydown="handleBuySearchEnter(event)"
+          style="margin-bottom:8px">
         <select class="form-input" id="buyCategory" onchange="onBuyCategorySelect()">
           <option value="">— Select Category —</option>
         </select>
@@ -259,7 +264,15 @@
           <div class="form-label" style="margin-bottom:0">📂 Category</div>
           <button id="clearCatBtn" onclick="clearCategorySelection()" style="display:none;background:var(--danger-lite);border:1px solid rgba(214,48,49,0.2);color:var(--danger);font-size:11px;font-weight:700;padding:4px 10px;border-radius:7px;cursor:pointer;font-family:'Poppins',sans-serif">✕ Clear</button>
         </div>
-        <select class="form-input" id="sellCategory" onchange="onSellCategorySelect()">
+        <!-- Search filter -->
+        <div style="position:relative;margin-bottom:8px">
+          <input type="text" class="form-input" id="sellCategorySearch"
+            placeholder="🔍 Search category..."
+            oninput="filterSellCategories()"
+            onkeydown="handleSellSearchEnter(event)"
+            style="padding-left:14px">
+        </div>
+        <select class="form-input" id="sellCategory" onchange="onSellCategorySelect()" size="1">
           <option value="">— Select Category —</option>
         </select>
         <div class="stock-pill-row" id="stockPillRow" style="display:none">
