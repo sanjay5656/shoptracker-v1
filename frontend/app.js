@@ -638,14 +638,13 @@ function confirmCancel() {
 function showDashTab(tab, btn) {
   document.querySelectorAll('#seeScreen .tab-content').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('#seeScreen .tab-btn').forEach(b=>b.classList.remove('active'));
-  const map={today:'dashToday',month:'dashMonth',stock:'dashStock',top:'dashTop',categories:'dashCategories'};
+  const map={today:'dashToday',month:'dashMonth',stock:'dashStock',top:'dashTop'};
   get(map[tab]).classList.add('active');
   btn.classList.add('active');
   if (tab==='today')   loadDashToday();
   if (tab==='month')   loadDashMonth();
   if (tab==='stock')   loadDashStock();
   if (tab==='top')     loadDashTop();
-  if (tab==='categories') loadCatMgmt();
 }
 
 async function loadDashToday() {
