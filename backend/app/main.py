@@ -41,8 +41,13 @@ def get_status():
         "status": "online"
     }
 
-FRONTEND_DIR = os.path.join(os.path.dirname(__file__), "..", "..", "frontend")
+# Try frontend inside backend first (Railway)
+# Fall back to frontend outside backend (local development)
+FRONTEND_DIR = os.path.join(os.path.dirname(__file__), "..", "frontend")
 FRONTEND_DIR = os.path.abspath(FRONTEND_DIR)
+if not os.path.exists(FRONTEND_DIR):
+    FRONTEND_DIR = os.path.join(os.path.dirname(__file__), "..", "..", "frontend")
+    FRONTEND_DIR = os.path.abspath(FRONTEND_DIR)
 
 if os.path.exists(FRONTEND_DIR):
     @app.get("/")

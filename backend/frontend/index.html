@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>ShopTracker — SAN Industries</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css?v=1773809460">
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="topbar-logo">
+    <svg class="logo-svg" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="bgG" x1="0" y1="0" x2="56" y2="56" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stop-color="#ea580c"/>
+          <stop offset="100%" stop-color="#f97316"/>
+        </linearGradient>
+        <linearGradient id="barG" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#fcd34d"/>
+          <stop offset="100%" stop-color="#f97316"/>
+        </linearGradient>
+      </defs>
+      <rect width="56" height="56" rx="14" fill="url(#bgG)"/>
+      <rect x="11" y="23" width="34" height="23" rx="5" fill="white" opacity="0.95"/>
+      <path d="M19 23 C19 15 37 15 37 23" stroke="white" stroke-width="3.2" stroke-linecap="round" fill="none"/>
+      <rect x="16" y="34" width="5" height="9"  rx="2" fill="url(#barG)"/>
+      <rect x="25.5" y="29" width="5" height="14" rx="2" fill="url(#barG)"/>
+      <rect x="35" y="25" width="5" height="18" rx="2" fill="url(#barG)"/>
+    </svg>
+    <div class="logo-wordmark">
+      <span class="w1">ShopTracker</span>
+    </div>
+  </div>
+  <div class="topbar-profit" onclick="showTodaySoldItems()">
+    <span class="tb-label">Today's Profit</span>
+    <span class="tb-amount" id="topbarProfit">₹0</span>
+  </div>
+</div>
+
+<!-- OFFLINE BANNER -->
+<div class="offline-banner" id="offlineBanner">📴 Server offline — check your connection</div>
+
+<!-- ═══ HOME SCREEN ═══ -->
+<div class="screen active" id="homeScreen">
+  <div class="home-hero">
+    <div class="hero-shop-info">
+      <div>
+            </div>
+      <div class="hero-date-badge">
+        <div class="hdb-day" id="heroDay">14</div>
+        <div class="hdb-mon" id="heroMon">MAR</div>
+      </div>
+    </div>
+    <div class="hero-lbl">Today's Earnings</div>
+    <div class="hero-amt"><span class="cur">₹</span><span id="homeProfitAmt">0</span></div>
+    <div class="hero-sub" id="homeSubtitle">No sales yet today</div>
+    <div class="hero-stats">
+      <div class="hero-stat">
+        <div class="hs-val" id="heroRevenue">₹0</div>
+        <div class="hs-lbl">Revenue</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hs-val" id="heroItems">0</div>
+        <div class="hs-lbl">Sold</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hs-val gold" id="heroBargain">₹0</div>
+        <div class="hs-lbl">Bargain</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="alert-banner" id="alertBanner" style="display:none">
+    🔴 <span id="alertMsg"></span>
+  </div>
+
+  <div class="quick-grid">
+    <button class="qa-btn buy" onclick="switchTab('buy')">
+      <div class="qa-icon">🛒</div>
+      <div class="qa-label">Buy Stock</div>
+      <div class="qa-sub">Record purchase</div>
+    </button>
+    <button class="qa-btn sell" onclick="switchTab('sell')">
+      <div class="qa-icon">💰</div>
+      <div class="qa-label">New Sale</div>
+      <div class="qa-sub">Sell to customer</div>
+    </button>
+  </div>
+
+  <div class="glance-card card" style="margin:0 16px 16px">
+    <div class="glance-header">
+      <span class="glance-title">📊 Today at a Glance</span>
+      <span class="pill pill-gold" id="todayDate">—</span>
+    </div>
+    <div class="glance-rows">
+      <div class="g-row"><span class="g-lbl">💵 Revenue</span><span class="g-val green" id="tcRevenue">₹0</span></div>
+      <div class="g-row"><span class="g-lbl">📈 Profit</span><span class="g-val green" id="tcProfit">₹0</span></div>
+      <div class="g-row"><span class="g-lbl">📉 Bargain Loss</span><span class="g-val orange" id="tcBargain">₹0</span></div>
+      <div class="g-row" style="cursor:pointer" onclick="showTodaySoldItems()"><span class="g-lbl">📦 Items Sold</span><span class="g-val" id="tcItems">0</span><span style="font-size:10px;color:var(--text3);margin-left:6px">👆 tap</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ BUY SCREEN ═══ -->
+<div class="screen" id="buyScreen">
+  <div class="screen-header">
+    <button class="back-btn" onclick="switchTab('home')">←</button>
+    <div>
+      <div class="sh-title">🛒 Buy Stock</div>
+      <div class="sh-sub">Record purchase &amp; manage categories</div>
+    </div>
+  </div>
+  <div class="pad">
+
+    <!-- TOP BOX: 3 tab buttons -->
+    <div class="buy-tab-bar">
+      <button class="buy-tab-btn active" id="btab-select" onclick="setBuyTab('select',this)">
+        <span class="btab-icon">📂</span>
+        <span class="btab-label">Select</span>
+      </button>
+      <button class="buy-tab-btn" id="btab-new" onclick="setBuyTab('new',this)">
+        <span class="btab-icon">➕</span>
+        <span class="btab-label">New</span>
+      </button>
+      <button class="buy-tab-btn" id="btab-edit" onclick="setBuyTab('edit',this)">
+        <span class="btab-icon">✏️</span>
+        <span class="btab-label">Edit</span>
+      </button>
+    </div>
+
+    <!-- BOTTOM PANEL: changes based on tab -->
+    <div class="buy-tab-panel">
+
+      <!-- SELECT TAB -->
+      <div id="buyTabSelect" style="display:block">
+        <input type="text" class="form-input" id="buyCategorySearch"
+          placeholder="🔍 Search category..."
+          oninput="filterBuyCategories()"
+          onkeydown="handleBuySearchEnter(event)"
+          style="margin-bottom:8px">
+        <select class="form-input" id="buyCategory" onchange="onBuyCategorySelect()">
+          <option value="">— Select Category —</option>
+        </select>
+        <div id="buyCatInfoStrip" style="display:none;background:var(--green-lite);border-radius:var(--r-sm);padding:10px 14px;margin-top:10px;border:1px solid rgba(26,107,60,0.15)">
+          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+            <div style="text-align:center">
+              <div style="font-size:10px;color:var(--text3);font-weight:600;text-transform:uppercase">Stock</div>
+              <div style="font-size:22px;font-weight:800;color:var(--text)" id="buyCatStockVal">0</div>
+            </div>
+            <div style="text-align:center">
+              <div style="font-size:10px;color:var(--text3);font-weight:600;text-transform:uppercase">Sell Price</div>
+              <div style="font-size:22px;font-weight:800;color:var(--green)" id="buyCatSellVal">₹0</div>
+            </div>
+            <div style="text-align:center">
+              <div style="font-size:10px;color:var(--text3);font-weight:600;text-transform:uppercase">Avg Cost</div>
+              <div style="font-size:22px;font-weight:800;color:var(--text2)" id="buyCatCostVal">—</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- NEW TAB -->
+      <div id="buyTabNew" style="display:none">
+        <div class="form-group" style="margin-bottom:0">
+          <div class="form-label">Category Name</div>
+          <input type="text" class="form-input" id="newCatName" placeholder="e.g. Earrings, Bangles, Toys">
+        </div>
+        <div style="font-size:12px;color:var(--text3);margin-top:8px;padding:8px 10px;background:var(--surface2);border-radius:8px">
+          💡 Set selling price in Purchase Details below
+        </div>
+      </div>
+
+      <!-- EDIT TAB -->
+      <div id="buyTabEdit" style="display:none">
+        <div id="buyEditCatList">
+          <div class="empty-state" style="padding:20px">
+            <div class="es-icon">🏷️</div>
+            <div class="es-title">Loading...</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- PURCHASE DETAILS (hidden when EDIT tab active) -->
+    <div id="buyPurchaseDetails">
+      <div class="buy-step-card" style="margin-top:12px">
+        <div class="buy-step-label">💰 Purchase Details</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+          <div class="form-group" style="margin-bottom:0">
+            <div class="form-label">Qty Bought</div>
+            <input type="number" class="form-input" id="buyQty" placeholder="e.g. 50" inputmode="numeric" min="1" oninput="calcBuy()">
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <div class="form-label">Wholesale ₹</div>
+            <input type="number" class="form-input" id="buyTotal" placeholder="e.g. 800" inputmode="numeric" min="0" oninput="calcBuy()">
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+          <div class="form-group" style="margin-bottom:0">
+            <div class="form-label">Sell Price ₹ <span class="opt">(opt)</span></div>
+            <input type="number" class="form-input" id="buySellingPrice" placeholder="e.g. 60" inputmode="numeric" min="0" oninput="calcBuy()">
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <div class="form-label">Cost/Piece</div>
+            <div class="form-input" id="costPerPieceDisplay" style="background:var(--surface2);color:var(--text3);font-size:15px;display:flex;align-items:center">—</div>
+          </div>
+        </div>
+        <div class="calc-box" id="calcBox" style="margin-bottom:10px">
+          <div class="calc-row" id="marginRow" style="display:none">
+            <span class="cr-label">Expected margin per piece</span>
+            <span class="cr-val" id="expectedMargin">₹0</span>
+          </div>
+        </div>
+        <div class="form-group" style="margin-bottom:0">
+          <div class="form-label">🏪 Supplier <span class="opt">(opt)</span></div>
+          <input type="text" class="form-input" id="buySupplier" placeholder="e.g. EC Wholesale">
+        </div>
+      </div>
+    </div>
+
+    <button class="btn btn-green" id="buySaveBtn" style="margin-top:12px" onclick="recordPurchase()">✅ Save Purchase</button>
+    <div class="info-box green" id="buySuccessBox" style="display:none;margin-top:12px"></div>
+
+  </div>
+</div>
+<!-- ═══ SELL SCREEN ═══ -->
+<div class="screen" id="sellScreen">
+  <div class="screen-header">
+    <button class="back-btn" onclick="switchTab('home')">←</button>
+    <div>
+      <div class="sh-title">💰 New Sale</div>
+      <div class="sh-sub">Sell to customer</div>
+    </div>
+  </div>
+
+  <div class="cart-section" id="cartSection">
+    <div class="cart-header">
+      <span class="ch-title">🛍️ Cart</span>
+      <span class="ch-total" id="cartTotalDisplay">₹0</span>
+    </div>
+    <div id="cartItems"></div>
+  </div>
+
+  <!-- All stock used up banner -->
+  <div class="cart-complete-banner" id="cartCompleteBanner">
+    ✅ All available stock added to cart.<br>
+    <span style="font-size:12px;color:var(--text2)">Tap "Done" below to proceed to payment.</span>
+  </div>
+
+  <div class="pad" style="padding-top:12px" id="sellFormArea">
+    <div class="card"><div class="card-body">
+
+      <div class="form-group">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+          <div class="form-label" style="margin-bottom:0">📂 Category</div>
+          <button id="clearCatBtn" onclick="clearCategorySelection()" style="display:none;background:var(--danger-lite);border:1px solid rgba(214,48,49,0.2);color:var(--danger);font-size:11px;font-weight:700;padding:4px 10px;border-radius:7px;cursor:pointer;font-family:'Poppins',sans-serif">✕ Clear</button>
+        </div>
+        <!-- Search filter -->
+        <div style="position:relative;margin-bottom:8px">
+          <input type="text" class="form-input" id="sellCategorySearch"
+            placeholder="🔍 Search category..."
+            oninput="filterSellCategories()"
+            onkeydown="handleSellSearchEnter(event)"
+            style="padding-left:14px">
+        </div>
+        <select class="form-input" id="sellCategory" onchange="onSellCategorySelect()" size="1">
+          <option value="">— Select Category —</option>
+        </select>
+        <div class="stock-pill-row" id="stockPillRow" style="display:none">
+          <span class="pill" id="stockPill">📦 0 left</span>
+        </div>
+      </div>
+
+      <div id="sellPriceSection" style="display:none">
+        <div class="form-label" style="margin-bottom:6px">🏷️ Price per Piece</div>
+        <div class="price-display" id="priceDisplay" onclick="enablePriceEdit()">
+          <div>
+            <div class="pd-label">Selling Price</div>
+            <div class="pd-value" id="priceDisplayVal">₹0</div>
+          </div>
+          <div class="pd-tap">✏️ Tap to edit</div>
+        </div>
+        <input type="number" class="form-input" id="sellPrice"
+          style="display:none; margin-top:8px"
+          placeholder="Enter price" inputmode="numeric" min="0"
+          oninput="calcSellTotal()" onblur="showPriceDisplay()">
+      </div>
+
+      <div class="form-group" id="sellQtySection" style="display:none; margin-top:12px">
+        <div class="form-label">📦 Quantity</div>
+        <input type="number" class="form-input" id="sellQty" placeholder="e.g. 3" inputmode="numeric" min="1" oninput="calcSellTotal()">
+      </div>
+
+      <div class="item-total-box" id="itemTotalBox">
+        <span class="itb-label">Item Total</span>
+        <span class="itb-value" id="itemTotalVal">₹0</span>
+      </div>
+
+      <div class="cart-buttons" id="cartButtons">
+        <button class="btn btn-ghost" id="addAnotherBtn" onclick="addToCart('next')">➕ Add Another</button>
+        <button class="btn btn-orange" onclick="addToCart('done')">✅ Done</button>
+      </div>
+
+      <div class="info-box orange" id="sellInfoBox" style="display:none; margin-top:10px"></div>
+    </div></div>
+  </div>
+
+  <!-- Done button shown when all categories exhausted -->
+  <div class="pad" id="sellDoneOnlyArea" style="display:none;padding-top:0">
+    <button class="btn btn-orange" onclick="showFinalSection()">✅ Proceed to Payment</button>
+  </div>
+
+  <div class="final-section" id="finalSection">
+    <div class="final-card">
+      <div class="final-card-header">
+        <div class="fch-title">💳 Customer Pays</div>
+        <div class="fch-amount" id="fchCartTotal">₹0</div>
+      </div>
+      <div class="final-card-body">
+        <div class="form-group">
+          <div class="form-label">🤝 Actual Amount Received (₹)</div>
+          <input type="number" class="form-input" id="finalActualAmt"
+            placeholder="Enter actual amount" inputmode="numeric" min="0" oninput="calcFinalProfit()">
+        </div>
+        <div class="profit-preview" id="profitPreview">
+          <div class="pp-row">
+            <span class="pp-label">💰 Total Profit</span>
+            <span class="pp-val green" id="ppProfit">₹0</span>
+          </div>
+          <div class="pp-row">
+            <span class="pp-label">📉 Bargain Loss</span>
+            <span class="pp-val orange" id="ppBargain">₹0</span>
+          </div>
+        </div>
+        <button class="btn btn-green" style="margin-top:14px" onclick="saveSale()">✅ Save Sale</button>
+        <button class="btn btn-outline" style="margin-top:8px" onclick="addMoreItems()">← Add More Items</button>
+        <div class="info-box green" id="sellSuccessBox" style="display:none; margin-top:12px"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ DASHBOARD SCREEN ═══ -->
+<div class="screen" id="seeScreen">
+  <div class="tab-bar">
+    <button class="tab-btn active" onclick="showDashTab('today',this)">Today</button>
+    <button class="tab-btn"        onclick="showDashTab('month',this)">Month</button>
+    <button class="tab-btn"        onclick="showDashTab('stock',this)">Stock</button>
+    <button class="tab-btn"        onclick="showDashTab('top',this)">Top Items</button>
+
+  </div>
+
+  <!-- TODAY -->
+  <div class="tab-content active pad" id="dashToday">
+    <div class="stats-grid">
+      <div class="stat-card"><div class="sc-icon">💵</div><div class="sc-label">Revenue</div><div class="sc-value green" id="dRevenue">₹0</div></div>
+      <div class="stat-card"><div class="sc-icon">📈</div><div class="sc-label">Profit</div><div class="sc-value green" id="dProfit">₹0</div></div>
+      <div class="stat-card"><div class="sc-icon">📉</div><div class="sc-label">Bargain</div><div class="sc-value orange" id="dBargain">₹0</div></div>
+      <div class="stat-card" style="cursor:pointer" onclick="showTodaySoldItems()"><div class="sc-icon">📦</div><div class="sc-label">Items Sold 👆</div><div class="sc-value" id="dItems">0</div><div style="font-size:10px;color:var(--text3);margin-top:2px">tap to view</div></div>
+    </div>
+  </div>
+
+  <!-- MONTH -->
+  <div class="tab-content pad" id="dashMonth">
+    <div class="stats-grid">
+      <div class="stat-card"><div class="sc-icon">💵</div><div class="sc-label">Revenue</div><div class="sc-value green" id="mRevenue">₹0</div></div>
+      <div class="stat-card"><div class="sc-icon">📈</div><div class="sc-label">Profit</div><div class="sc-value green" id="mProfit">₹0</div></div>
+      <div class="stat-card"><div class="sc-icon">📉</div><div class="sc-label">Bargain</div><div class="sc-value orange" id="mBargain">₹0</div></div>
+      <div class="stat-card"><div class="sc-icon">🌟</div><div class="sc-label">Best Day</div><div class="sc-value gold" id="mBestDay" style="font-size:13px">—</div></div>
+    </div>
+    <div style="margin-top:14px">
+      <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text3);margin-bottom:10px">📦 Items Sold This Month</div>
+      <div id="monthSoldList">
+        <div class="empty-state" style="padding:20px"><div class="es-icon" style="font-size:30px">📦</div><div class="es-title">Loading...</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STOCK -->
+  <div class="tab-content pad" id="dashStock">
+    <div id="stockList"><div class="empty-state"><div class="es-icon">📦</div><div class="es-title">Loading stock...</div></div></div>
+  </div>
+
+  <!-- TOP ITEMS -->
+  <div class="tab-content pad" id="dashTop">
+    <div id="topList"><div class="empty-state"><div class="es-icon">🏆</div><div class="es-title">Loading top items...</div></div></div>
+  </div>
+
+  <!-- CATEGORIES MANAGEMENT -->
+
+
+</div>
+
+<!-- ═══ HISTORY SCREEN ═══ -->
+<div class="screen" id="historyScreen">
+  <div class="screen-header">
+    <button class="back-btn" onclick="switchTab('home')">←</button>
+    <div>
+      <div class="sh-title">📋 History</div>
+      <div class="sh-sub">Sales &amp; purchases</div>
+    </div>
+  </div>
+  <div class="hist-filter">
+    <input type="date" id="histFrom">
+    <span class="sep">→</span>
+    <input type="date" id="histTo">
+    <button class="go-btn" onclick="loadHistory()">Go</button>
+  </div>
+  <div class="hist-type-bar">
+    <button class="htype-btn active" id="htype-all"   onclick="showHistType('all',this)">All</button>
+    <button class="htype-btn"        id="htype-sales" onclick="showHistType('sales',this)">Sales</button>
+    <button class="htype-btn"        id="htype-buys"  onclick="showHistType('purchases',this)">Purchases</button>
+  </div>
+  <div id="histList" style="padding:12px 0 4px"></div>
+</div>
+
+
+<nav class="bottom-nav">
+  <button class="nav-item active" id="nav-home" onclick="switchTab('home')">
+    <div class="nav-icon">🏠</div>
+    <div class="nav-label">Home</div>
+  </button>
+  <button class="nav-item" id="nav-buy" onclick="switchTab('buy')">
+    <div class="nav-icon">🛒</div>
+    <div class="nav-label">Buy</div>
+  </button>
+  <button class="nav-item nav-sell" id="nav-sell" onclick="switchTab('sell')">
+    <div class="nav-icon">💰</div>
+    <div class="nav-label">SELL</div>
+  </button>
+  <button class="nav-item" id="nav-see" onclick="switchTab('see')">
+    <div class="nav-icon">📊</div>
+    <div class="nav-label">Dashboard</div>
+  </button>
+  <button class="nav-item" id="nav-history" onclick="goToHistory()">
+    <div class="nav-icon">📋</div>
+    <div class="nav-label">History</div>
+  </button>
+</nav>
+
+<div class="toast" id="successToast"></div>
+
+<!-- TODAY SOLD ITEMS MODAL -->
+<div id="soldModal" class="modal-backdrop">
+  <div class="modal-sheet">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title" id="soldModalTitle">📦 Items Sold Today</div>
+        <div style="font-size:11px;color:rgba(255,255,255,0.6)" id="soldModalDate"></div>
+      </div>
+      <button class="modal-close" onclick="closeSoldModal()">✕</button>
+    </div>
+    <div id="soldModalBody" style="padding:16px"></div>
+  </div>
+</div>
+
+<!-- CONFIRM DIALOG -->
+<div class="confirm-overlay" id="confirmOverlay">
+  <div class="confirm-box">
+    <div class="confirm-title" id="confirmTitle">Are you sure?</div>
+    <div class="confirm-msg" id="confirmMsg"></div>
+    <div class="confirm-btns">
+      <button class="btn btn-outline btn-sm" style="flex:1" onclick="confirmCancel()">Cancel</button>
+      <button class="btn btn-orange btn-sm" style="flex:1;background:var(--danger);box-shadow:none" id="confirmOkBtn" onclick="confirmOk()">Remove</button>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT CART ITEM OVERLAY -->
+<div class="edit-cart-overlay" id="editCartOverlay">
+  <div class="edit-cart-box">
+    <div class="edit-cart-title" id="editCartTitle">✏️ Edit Item</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
+      <div class="form-group" style="margin-bottom:0">
+        <div class="form-label">Quantity</div>
+        <input type="number" class="form-input" id="editCartQty" inputmode="numeric" min="1">
+      </div>
+      <div class="form-group" style="margin-bottom:0">
+        <div class="form-label">Price/pc ₹</div>
+        <input type="number" class="form-input" id="editCartPrice" inputmode="numeric" min="0">
+      </div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-outline btn-sm" style="flex:1" onclick="closeEditCart()">Cancel</button>
+      <button class="btn btn-green btn-sm" style="flex:1" onclick="saveEditCart()">✅ Update</button>
+    </div>
+  </div>
+</div>
+
+<script src="app.js?v=1773809460"></script>
+</body>
+</html>
