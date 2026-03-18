@@ -47,47 +47,17 @@ async function checkOnline() {
 // ─────────────────────────────────────────
 //  SETTINGS — FIX #7
 // ─────────────────────────────────────────
-function loadSettings() {
-  const shop  = safeGetStorage('shop_name')  || 'My Shop';
-  const owner = safeGetStorage('owner_name') || 'Owner';
-  get('topbarShopName').textContent  = shop;
-  get('heroShopName').textContent    = shop;
-  get('heroOwnerName').textContent   = '👤 ' + owner;
-}
 
-function openSettings() {
-  get('settingShopName').value  = safeGetStorage('shop_name')  || '';
-  get('settingOwnerName').value = safeGetStorage('owner_name') || '';
-  get('settingApiUrl').value    = API_URL;
-  get('settingApiCurrent').textContent = API_URL;
-  get('settingsModal').classList.add('show');
-}
-function closeSettings() { get('settingsModal').classList.remove('show'); }
 
-function saveSettings() {
-  const shop  = get('settingShopName').value.trim()  || 'My Shop';
-  const owner = get('settingOwnerName').value.trim() || 'Owner';
-  const newUrl = get('settingApiUrl').value.trim();
-  safeSetStorage('shop_name', shop);
-  safeSetStorage('owner_name', owner);
-  if (newUrl && newUrl !== API_URL) {
-    safeSetStorage('api_url', newUrl);
-    API_URL = newUrl;
-    closeSettings();
-    showToast('✅ Settings saved — reloading...');
-    setTimeout(() => location.reload(), 1200);
-    return;
-  }
-  loadSettings();
-  closeSettings();
-  showToast('✅ Settings saved!');
-}
+
+
+
+
 
 // ─────────────────────────────────────────
 //  INIT
 // ─────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
-  loadSettings();
 
   // Date display
   const now = new Date();
