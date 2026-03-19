@@ -10,7 +10,7 @@ const HASH_TAB = { '#home':'home', '#buy':'buy', '#sell':'sell', '#dashboard':'s
 // If served from FastAPI (:8000), API is on same host. Otherwise use stored URL.
 function safeGetStorage(k){try{return localStorage.getItem(k);}catch(e){return null;}}
 function safeSetStorage(k,v){try{localStorage.setItem(k,v);}catch(e){}}
-let API_URL = safeGetStorage('api_url') || (window.location.port === '8000' ? window.location.origin : 'http://localhost:8000');
+let API_URL = safeGetStorage('api_url') || window.location.origin;
 let cart = [], cartTotal = 0;
 let histData = { sales: [], purchases: [] };
 let histMode = 'all';
