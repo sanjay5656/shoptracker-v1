@@ -53,4 +53,21 @@ if os.path.exists(FRONTEND_DIR):
     @app.get("/")
     def serve_frontend():
         return FileResponse(os.path.join(FRONTEND_DIR, "index.html"))
-    app.mount("/", StaticFiles(directory=FRONTEND_DIR), name="static")
+
+    @app.get("/style.css")
+    def serve_css():
+        return FileResponse(os.path.join(FRONTEND_DIR, "style.css"), media_type="text/css")
+
+    @app.get("/app.js")
+    def serve_js():
+        return FileResponse(os.path.join(FRONTEND_DIR, "app.js"), media_type="application/javascript")
+
+    @app.get("/manifest.json")
+    def serve_manifest():
+        return FileResponse(os.path.join(FRONTEND_DIR, "manifest.json"), media_type="application/json")
+
+    @app.get("/sw.js")
+    def serve_sw():
+        return FileResponse(os.path.join(FRONTEND_DIR, "sw.js"), media_type="application/javascript")
+
+    app.mount("/static", StaticFiles(directory=FRONTEND_DIR), name="static")
